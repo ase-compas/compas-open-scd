@@ -31,14 +31,14 @@ export const officialPlugins = [
     kind: 'editor',
     requireDoc: true,
   },
-  {
-    name: 'Subscriber Data Binding (GOOSE)',
-    src: '/oscd-plugins/editors/GooseSubscriberDataBinding.js',
-    icon: 'link',
-    activeByDefault: false,
-    kind: 'editor',
-    requireDoc: true,
-  },
+  // {
+  //   name: 'Subscriber Data Binding (GOOSE)',
+  //   src: '/oscd-plugins/editors/GooseSubscriberDataBinding.js',
+  //   icon: 'link',
+  //   activeByDefault: false,
+  //   kind: 'editor',
+  //   requireDoc: true,
+  // },
   {
     name: 'Subscriber Message Binding (SMV)',
     src: '/oscd-plugins/editors/SMVSubscriberMessageBinding.js',
@@ -449,5 +449,13 @@ export const officialPlugins = [
     activeByDefault: false,
     kind: 'editor',
     requireDoc: true,
-  }
+  },
+  {
+    name: 'Subscriber Data Binding (GOOSE)',
+    src: '/external-plugins/oscd-editor-subscriber-databinding_omnicron_v0.0.5/oscd-editor-subscriber-databinding.js',
+    icon: 'link',
+    activeByDefault: true,
+    kind: 'editor',
+    requireDoc: true,
+  },
 ];
