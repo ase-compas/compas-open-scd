@@ -484,7 +484,7 @@ export const officialPlugins = [
   },
   {
     name: 'Plugin Hub',
-    src: '/external-plugins/tmp/plugin-hub/index.js',
+    src: '/external-plugins/tmp/plugins-hub/index.js',
     icon: 'hub',
     activeByDefault: false,
     kind: 'editor',
