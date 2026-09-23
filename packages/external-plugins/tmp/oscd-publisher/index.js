@@ -30803,7 +30803,8 @@ function mi(g) {
 const qg = Y`
   .section {
     display: flex;
-    height: calc(100vh - 184px);
+    min-height: 0;
+    overlay: auto;
   }
 
   .selectionlist {
@@ -38373,24 +38374,28 @@ class Zi extends k(O) {
     switch (this.publisherType) {
       case "Report":
         return n`<report-control-editor
+          class="editor"
           .doc=${this.doc}
           .editCount=${this.editCount}
           .searchValue=${this.filterValues.Report}
         ></report-control-editor>`;
       case "GOOSE":
         return n`<gse-control-editor
+          class="editor"
           .doc=${this.doc}
           .editCount=${this.editCount}
           .searchValue=${this.filterValues.GOOSE}
         ></gse-control-editor>`;
       case "SampledValue":
         return n`<sampled-value-control-editor
+          class="editor"
           .doc=${this.doc}
           .editCount=${this.editCount}
           .searchValue=${this.filterValues.SampledValue}
         ></sampled-value-control-editor>`;
       case "DataSet":
         return n`<data-set-editor
+          class="editor"
           .doc=${this.doc}
           .editCount=${this.editCount}
           .searchValue=${this.filterValues.DataSet}
@@ -38447,6 +38452,15 @@ class Zi extends k(O) {
       :host {
         --md-icon-font: var(--wm-internal-icon-font);
         font-family: var(--wm-internal-text-font);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .editor {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
       }
 
       * {
@@ -38470,7 +38484,6 @@ class Zi extends k(O) {
           transparent
         );
       }
-
       .hidden {
         display: none;
       }

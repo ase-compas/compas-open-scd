@@ -76,22 +76,21 @@ export class CompasLayout extends OscdLayout {
       :host(.hide-editor-tabs) oscd-menu-tabs {
         display: none !important;
       }
+
+      /* Bound editor plugin height to remaining viewport below header/tabs. */
+      /* Should be obsolete after Issue: https://github.com/com-pas/open-scd/issues/173 */
+      :host > div {
+        height: calc(-4px + 100vh);  /* 4px is the bottom progressbar from the oscd-waiter wrapper */
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .plugin.editor {
+        min-height: 0;
+        flex: 1;
+      }
     `,
-//   /* deactivate vertical height bugfix: oscd-editor-ied is not ready for it. */
-//      /* Bound editor plugin height to remaining viewport below header/tabs. */
-//      /* Should be obsolete after Issue: https://github.com/com-pas/open-scd/issues/173 */
-//      :host > div {
-//        height: calc(-4px + 100vh);  /* 4px is the bottom progressbar from the oscd-waiter wrapper */
-//        display: flex;
-//        flex-direction: column;
-//        min-height: 0;
-//      }
-//
-//      .plugin.editor {
-//        min-height: 0;
-//        flex: 1;
-//      }
-//    `,
     // TODO: Delete this block when Open-SCD is upgraded to the release that
     // already contains these Layout / menu-tabs theme fixes (issue #534).
     css` 
