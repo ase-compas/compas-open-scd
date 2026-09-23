@@ -97,8 +97,16 @@ export const officialPlugins = [
   },
   {
     name: 'Communication Explorer',
-    src: '/external-plugins/oscd-plugins/communication-explorer/0.0.32/index.js',
-    icon: 'lan',
+    src: '/external-plugins/oscd-plugins/communication-explorer/0.1.0/index.js',
+    icon: 'account_tree',
+    activeByDefault: false,
+    kind: 'editor',
+    requireDoc: true,
+  },
+  {
+    name: 'Auto Doc',
+    src: '/external-plugins/oscd-plugins/auto-doc/1.19.0/index.js',
+    icon: 'description',
     activeByDefault: false,
     kind: 'editor',
     requireDoc: true,
