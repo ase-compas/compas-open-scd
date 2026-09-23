@@ -1,12 +1,24 @@
 export const officialPlugins = [
+  // Quick fix: upstream IED editor wrapped to add a default <Services> section
+  // to newly created IEDs. See packages/external-plugins/IedEditorWithServices.js
   {
     name: 'IED',
-    src: '/external-plugins/IedEditor.js',
+    src: '/external-plugins/IedEditorWithServices.js',
     icon: 'developer_board',
     activeByDefault: true,
     kind: 'editor',
     requireDoc: true,
   },
+  // Original upstream IED editor, replaced by IedEditorWithServices.js above.
+  // Restore this entry (and remove the one above) once upstream adds Services itself.
+  // {
+  //   name: 'IED',
+  //   src: '/external-plugins/IedEditor.js',
+  //   icon: 'developer_board',
+  //   activeByDefault: true,
+  //   kind: 'editor',
+  //   requireDoc: true,
+  // },
   {
     name: 'Substation',
     src: '/oscd-plugins/editors/Substation.js',
