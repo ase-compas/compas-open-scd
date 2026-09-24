@@ -21,15 +21,15 @@
   --internal-secondary-dark: #a070ff;
 
   /* Gray scale */
-  --internal-gray-10: #f7f7f7; /* lightest */
-  --internal-gray-20: #e6e6e6;
-  --internal-gray-30: #cccccc;
-  --internal-gray-40: #b3b3b3;
-  --internal-gray-50: #999999;
-  --internal-gray-60: #808080;
-  --internal-gray-70: #666666;
-  --internal-gray-80: #4d4d4d;
-  --internal-gray-90: #333333; /* darkest */
+  --internal-gray-10: #ffffff; /* lightest */
+  --internal-gray-20: #e0e0e0;
+  --internal-gray-30: #c2c2c2;
+  --internal-gray-40: #a3a3a3;
+  --internal-gray-50: #858585;
+  --internal-gray-60: #666666;
+  --internal-gray-70: #474747;
+  --internal-gray-80: #292929;
+  --internal-gray-90: #0a0a0a; /* darkest */
 
   --oscd-theme-primary: light-dark(var(--internal-primary-light), var(--internal-primary-dark));
   --oscd-theme-secondary: light-dark(var(--internal-secondary-light), var(--internal-secondary-dark));
