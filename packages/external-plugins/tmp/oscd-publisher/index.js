@@ -28661,14 +28661,14 @@ const qg = Y`
     flex: 35%;
     margin: 4px 4px 4px 8px;
     background-color: var(--wm-internal-base3);
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   .elementeditorcontainer {
     flex: 65%;
     margin: 4px 8px 4px 4px;
     background-color: var(--wm-internal-base3);
-    overflow-y: scroll;
+    overflow-y: auto;
     display: flex;
     z-index: 0;
   }
@@ -35068,7 +35068,12 @@ class cI extends k(O) {
       display: flex;
       align-items: center;
       gap: 4px;
-      margin: 8px;
+      padding: 8px;
+      background: color-mix(
+        in srgb,
+        var(--wm-internal-base2) 40%,
+        var(--wm-internal-base3)
+      );
     }
 
     .dataset-search {
@@ -35089,6 +35094,18 @@ class cI extends k(O) {
       font-size: 20px;
     }
 
+    .selectionlist .ied-add md-icon {
+      font-size: 17px;
+    }
+
+    .selectionlist .dataset-row .icon-button md-icon {
+      color: var(--wm-internal-primary);
+    }
+
+    .selectionlist .dataset-toolbar md-icon {
+      font-size: 24px;
+    }
+
     .ied-groups {
       min-height: 0;
     }
@@ -35096,10 +35113,15 @@ class cI extends k(O) {
     .ied-row {
       display: flex;
       align-items: center;
-      gap: 4px;
-      min-height: 40px;
+      gap: 8px;
+      min-height: 28px;
       padding: 0 8px 0 4px;
       border-bottom: 1px solid var(--wm-internal-base2);
+      background: color-mix(
+        in srgb,
+        var(--wm-internal-base2) 40%,
+        var(--wm-internal-base3)
+      );
     }
 
     .ied-toggle {
@@ -35109,7 +35131,7 @@ class cI extends k(O) {
       gap: 8px;
       min-width: 0;
       margin: 0;
-      padding: 8px;
+      padding: 2px 8px;
       border: 0;
       background: transparent;
       color: var(--wm-internal-base03);
@@ -35123,6 +35145,7 @@ class cI extends k(O) {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-weight: 500;
     }
 
     .ied-count {
@@ -35136,7 +35159,7 @@ class cI extends k(O) {
         var(--wm-internal-base3)
       );
       color: var(--wm-internal-primary);
-      font-size: 11px;
+      font-size: 14px;
       line-height: 18px;
       text-align: center;
     }
@@ -35161,10 +35184,15 @@ class cI extends k(O) {
     }
 
     .ied-add {
-      width: 24px;
-      height: 24px;
+      width: 17px;
+      height: 17px;
       border-radius: 50%;
       background: var(--wm-internal-base03);
+    }
+
+    .ied-chevron    {
+       width: 17px;
+       height: 17px;
     }
 
     .ied-add md-icon {
@@ -35183,10 +35211,15 @@ class cI extends k(O) {
       display: flex;
       align-items: center;
       gap: 8px;
-      min-height: 36px;
+      min-height: 28px;
       padding: 0px 4px 0px 36px;
       border-bottom: 1px solid var(--wm-internal-base2);
       cursor: pointer;
+    }
+
+    .dataset-row .icon-button {
+      width: 25px;
+      height: 25px;
     }
 
     .dataset-row.selected {
@@ -35203,6 +35236,7 @@ class cI extends k(O) {
       align-items: baseline;
       gap: 8px;
       min-width: 0;
+      font-weight: 500;
     }
 
     .dataset-name {
@@ -37153,7 +37187,7 @@ class AA extends SI {
       flex: 65%;
       margin: 4px 8px 4px 4px;
       background-color: var(--wm-internal-base3);
-      overflow-y: scroll;
+      overflow-y: auto;
       display: grid;
       grid-gap: 12px;
       padding: 8px 12px 16px;
@@ -37874,7 +37908,7 @@ class Ag extends SI {
       flex: 65%;
       margin: 4px 8px 4px 4px;
       background-color: var(--wm-internal-base3);
-      overflow-y: scroll;
+      overflow-y: auto;
       display: grid;
       grid-gap: 12px;
       padding: 8px 12px 16px;
@@ -38568,7 +38602,7 @@ class ig extends SI {
       flex: 65%;
       margin: 4px 8px 4px 4px;
       background-color: var(--wm-internal-base3);
-      overflow-y: scroll;
+      overflow-y: auto;
       display: grid;
       grid-gap: 12px;
       padding: 8px 12px 16px;
