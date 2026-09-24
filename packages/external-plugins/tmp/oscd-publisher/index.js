@@ -28654,6 +28654,7 @@ const qg = Y`
     display: flex;
     min-height: 0;
     overlay: auto;
+    height: 100%;
   }
 
   .selectionlist {
@@ -28695,10 +28696,6 @@ const qg = Y`
   }
 
   @media (max-width: 599px) {
-    .section {
-      height: 100%;
-    }
-
     .selectionlist {
       position: absolute;
       width: calc(100% - 32px);
