@@ -471,7 +471,7 @@ export const officialPlugins = [
     requireDoc: true,
   },
   {
-    name: 'Subscriber Data Binding (GOOSE)',
+    name: 'Subscriber Data Binding (Universal)',
     src: '/external-plugins/oscd-editor-subscriber-databinding_omnicron_v0.0.5/oscd-editor-subscriber-databinding.js',
     icon: 'link',
     activeByDefault: true,
