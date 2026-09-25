@@ -2,9 +2,9 @@
   "plugins": [
     {
       "name": "engineering-wizard",
-      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/engineering-wizard/1.3.8/index.js",
+      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/engineering-wizard/1.3.9/index.js",
       "dest": "compas-transnetbw-plugins/plugins/engineering-wizard/index.js",
-      "sha256": "4b5cd2a4755d104101a0ae96b43b82f272abb37f4534c928acaf78c22ee39967"
+      "sha256": "cc9c0e13793b8d9f9ab31dbc8980cb1fecce27614fb603fda00fa9a2bfaf4d85"
     },
     {
       "name": "template-generator",
