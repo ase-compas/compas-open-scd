@@ -479,6 +479,14 @@ export const officialPlugins = [
     requireDoc: true,
   },
   {
+    name: 'Subscriber Data Binding (Universal) Beta',
+    src: '/external-plugins/tmp/oscd-subscriber-databinding/index.js',
+    icon: 'link',
+    activeByDefault: true,
+    kind: 'editor',
+    requireDoc: true,
+  },
+  {
     name: 'ied Signal Mapper',
     src: '/external-plugins/tmp/ied-signal-mapper/index.js',
     icon: 'mediation',

@@ -1,0 +1,7 @@
+{
+  "name": "oscd-subscriber-databinding",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "OpenSCD editor plugin for GOOSE and SMV subscriber data binding with IEC 61850 SCL files. Integrated into the BearingPoint plugins monorepo from @omicronenergy/oscd-editor-subscriber-databinding.",
+  "license": "Apache-2.0"
+}
