@@ -33514,7 +33514,8 @@ class E extends T(O) {
     .entry-head {
       position: sticky;
       top: 0;
-      z-index: 1;
+      /* Below the dialog scrim (z-index: 1), above the in-flow rows. */
+      z-index: 0;
       min-height: 36px;
       background: var(--wm-internal-base3);
       border-bottom: 1px solid var(--wm-internal-base2);
