@@ -34352,8 +34352,14 @@ class N extends T(O) {
     .entry-row {
       /* Flex item. z-index traps md-checkbox under the sticky head. */
       z-index: 0;
-      min-height: 40px;
+      min-height: 32px;
+      font-size: 14px;
       border-bottom: 1px solid var(--wm-internal-base2);
+    }
+
+    .entry-row md-icon {
+      color: var(--wm-internal-base03);
+      font-size: 20px;
     }
 
     .entry-row.drop-before,
@@ -38816,7 +38822,6 @@ class qI extends wI {
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      padding: 8px 12px 16px;
       z-index: 0;
     }
 
@@ -39757,7 +39762,6 @@ class IC extends wI {
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      padding: 8px 12px 16px;
       z-index: 0;
     }
 
@@ -40896,7 +40900,6 @@ class NI extends wI {
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      padding: 8px 12px 16px;
       z-index: 0;
     }
 
