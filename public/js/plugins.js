@@ -495,7 +495,7 @@ export const officialPlugins = [
     requireDoc: true,
   },
   {
-    name: 'Publisher (Alpha-Version)',
+    name: 'Publisher (Beta)',
     src: '/external-plugins/tmp/oscd-publisher/index.js',
     icon: 'publish',
     activeByDefault: false,
