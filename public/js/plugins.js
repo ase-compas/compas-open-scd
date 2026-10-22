@@ -470,14 +470,14 @@ export const officialPlugins = [
     kind: 'editor',
     requireDoc: true,
   },
-  {
-    name: 'Subscriber Data Binding (Universal)',
-    src: '/external-plugins/oscd-editor-subscriber-databinding_omnicron_v0.0.5/oscd-editor-subscriber-databinding.js',
-    icon: 'link',
-    activeByDefault: true,
-    kind: 'editor',
-    requireDoc: true,
-  },
+//  {
+//    name: 'Subscriber Data Binding (Universal)',
+//    src: '/external-plugins/oscd-editor-subscriber-databinding_omnicron_v0.0.5/oscd-editor-subscriber-databinding.js',
+//    icon: 'link',
+//    activeByDefault: true,
+//    kind: 'editor',
+//    requireDoc: true,
+//  },
   {
     name: 'Subscriber Data Binding (Universal) Beta',
     src: '/external-plugins/tmp/oscd-subscriber-databinding/index.js',

@@ -10117,6 +10117,13 @@ const nf = [
     icon: "https://avatars.githubusercontent.com/u/44259540?s=200&v=4",
     description: "SprintEins plugin provider for OpenSCD.",
     pluginsUrl: "https://sprinteins.github.io/oscd-plugin-store/plugins.json"
+  },
+  {
+    prefix: "OE",
+    name: "OmicronEnergy Plugins",
+    icon: "https://omicronenergyoss.github.io/oscd-explorer/omicronenergy.png",
+    description: "Official OmicronEnergy plugin provider for OpenSCD.",
+    pluginsUrl: "https://omicronenergyoss.github.io/oscd-explorer/omicronenergy.plugins.json"
   }
 ], rf = nf;
 var af = /* @__PURE__ */ se('<span class="badge badge-builtin bp-typo-button">Built-in</span>'), sf = /* @__PURE__ */ se("<span> </span>"), lf = /* @__PURE__ */ se("<span> </span>"), of = /* @__PURE__ */ se('<div role="button" tabindex="0"><div class="card-top svelte-1myq0bn"><div class="plugin-icon-wrapper svelte-1myq0bn"><span class="oscd-icons plugin-icon svelte-1myq0bn"> </span></div> <button type="button"><!></button></div> <div class="plugin-name bp-typo-16-bold svelte-1myq0bn"> </div> <div class="plugin-kind-wrapper svelte-1myq0bn"><div class="badge badge-kind bp-typo-label"><span class="oscd-icons badge-icon"> </span> </div></div> <div class="plugin-description bp-typo-body svelte-1myq0bn"> </div> <div class="plugin-badges svelte-1myq0bn"><!> <!></div></div>');
