@@ -1,11 +1,12 @@
 /*
- * Set only --oscd-theme-* here. Unset tokens keep the themes.ts defaults.
+ * Set plugin tokens as --oscd-theme-* and host chrome as --oscd-compas-theme-*.
+ * Unset tokens keep the themes.ts defaults.
  * Use light-dark(light, dark) to follow the app theme; omit it for a fixed color.
  *
  *   primary / secondary — plugin brand fills; contrast with --oscd-theme-base2 or --oscd-theme-base3
  *   base03 … base3 / yellow … green — Solarized surfaces (invert in dark mode) and fixed accents
  *   warning / text-font / text-font-mono / icon-font / shape — optional; unset keeps host defaults
- *   nav-* / body-bg — host chrome only (app bar, tabs, page); plugins must not use these
+ *   --oscd-compas-theme-* — host chrome only (app bar, tabs, page); plugins must not use these
  *
  * See:
  *   docs/how-to/customer-branding.md
@@ -58,12 +59,12 @@
   
   --oscd-theme-shape: 8px;
 
-  /* Host distribution only. --oscd-theme-body-bg is the page fallback behind plugin surfaces. */
-  --oscd-theme-body-bg: var(--oscd-theme-base3);
-  --oscd-theme-nav-primary: var(--internal-primary-light);
-  --oscd-theme-nav-primary-active: var(--oscd-theme-secondary);
-  --oscd-theme-nav-primary-text: #fff;
-  --oscd-theme-nav-primary-text-active: #fff;
+  /* Host distribution only. --oscd-compas-theme-body-bg is the page fallback behind plugin surfaces. */
+  --oscd-compas-theme-body-bg: var(--oscd-theme-base3);
+  --oscd-compas-theme-nav-primary: var(--internal-primary-light);
+  --oscd-compas-theme-nav-primary-active: var(--oscd-theme-secondary);
+  --oscd-compas-theme-nav-primary-text: #fff;
+  --oscd-compas-theme-nav-primary-text-active: #fff;
 
 }
 
@@ -87,10 +88,10 @@
     --internal-gray-80: #202020;
     --internal-gray-90: #000000; /* darkest */
     
-    --oscd-theme-body-bg: var(--oscd-theme-base3);
-    --oscd-theme-nav-primary: var(--internal-primary-light);
-    --oscd-theme-nav-primary-active: var(--oscd-theme-secondary);
-    --oscd-theme-nav-primary-text: #fff;
-    --oscd-theme-nav-primary-text-active: #fff;
+    --oscd-compas-theme-body-bg: var(--oscd-theme-base3);
+    --oscd-compas-theme-nav-primary: var(--internal-primary-light);
+    --oscd-compas-theme-nav-primary-active: var(--oscd-theme-secondary);
+    --oscd-compas-theme-nav-primary-text: #fff;
+    --oscd-compas-theme-nav-primary-text-active: #fff;
   }
 }

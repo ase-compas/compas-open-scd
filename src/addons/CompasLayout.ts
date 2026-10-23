@@ -77,52 +77,6 @@ export class CompasLayout extends OscdLayout {
         display: none !important;
       }
     `,
-    // Bound editor plugin height to remaining viewport below header/tabs.
-    // TODO: Should be obsolete after Issue: https://github.com/com-pas/open-scd/issues/173
-    css` 
-      :host > div {
-        height: calc(-4px + 100vh);  /* 4px is the bottom progressbar from the oscd-waiter wrapper */
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-      }
-
-      .plugin.editor {
-        min-height: 0;
-        flex: 1;
-        height: 100%;
-        overflow: auto;
-      }
-    `,
-    // TODO: Delete this block when Open-SCD is upgraded to the release that
-    // already contains these Layout / menu-tabs theme fixes (issue #534).
-    css` 
-      /* mwc-drawer hardcodes title/subtitle to rgba(0,0,0,…). Color the slotted
-       * nodes here so they follow the Solarized scale in light and dark. */
-      mwc-drawer [slot='title'] {
-        color: var(--oscd-base02);
-      }
-  
-      mwc-drawer [slot='subtitle'] {
-        color: var(--oscd-base01);
-      }
-
-      mwc-top-app-bar-fixed {
-        /* Do not use --oscd-primary here (that token is plugin-facing and may be adaptive). */
-        --mdc-theme-primary: var(--oscd-internal-nav-primary);
-        --mdc-theme-on-primary: var(--oscd-internal-nav-primary-text);
-        --mdc-theme-text-disabled-on-light: color-mix(
-          in srgb,
-          var(--oscd-internal-nav-primary-text) 38%,
-          transparent
-        );
-      }
-
-      .landing_icon {
-        color: var(--oscd-base2);
-        background: var(--oscd-secondary);
-      }
-    `,
   ];
 
   connectedCallback(): void {
