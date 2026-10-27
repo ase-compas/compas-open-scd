@@ -38,12 +38,12 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, '..', '..');
 const REMOTE_PLUGINS_PATH = path.join(
   REPO_ROOT,
   'distribution',
-  'remote-plugins.json',
+  'remote-plugins.json'
 );
 const EXTERNAL_PLUGINS_DIR = path.join(
   REPO_ROOT,
   'distribution',
-  'external-plugins',
+  'external-plugins'
 );
 const ACCEPTED_COMMANDS = [
   'add',
@@ -54,7 +54,6 @@ const ACCEPTED_COMMANDS = [
   'verify',
   'download',
 ];
-
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -198,7 +197,9 @@ function parseArgs(argv) {
   if (!ACCEPTED_COMMANDS.includes(args.cmd)) {
     usage();
     fail(
-      `Unknown command "${args.cmd}". Accepted commands: ${ACCEPTED_COMMANDS.join(', ')}.`,
+      `Unknown command "${
+        args.cmd
+      }". Accepted commands: ${ACCEPTED_COMMANDS.join(', ')}.`
     );
   }
 
@@ -260,14 +261,16 @@ function validateAddArgs(args) {
     if (normalized === null) {
       fail(
         `Invalid --dest "${args.dest}". Must be a relative path with no ` +
-        'leading slash, backslashes, or ".."/"." segments.',
+          'leading slash, backslashes, or ".."/"." segments.'
       );
     }
     args.dest = normalized;
   } else {
     const inferred = destFromUrl(args.url);
     if (!inferred) {
-      fail(`Cannot infer --dest from URL "${args.url}". Please specify --dest.`);
+      fail(
+        `Cannot infer --dest from URL "${args.url}". Please specify --dest.`
+      );
     }
     args.dest = inferred;
   }
@@ -292,7 +295,7 @@ function validateUpdateArgs(args) {
     if (normalized === null) {
       fail(
         `Invalid --dest "${args.dest}". Must be a relative path with no ` +
-        'leading slash, backslashes, or ".."/"." segments.',
+          'leading slash, backslashes, or ".."/"." segments.'
       );
     }
     args.dest = normalized;
@@ -332,6 +335,40 @@ function readRemotePlugins() {
   if (!parsed || !Array.isArray(parsed.plugins)) {
     fail(`Invalid ${REMOTE_PLUGINS_PATH}: expected a "plugins" array.`);
   }
+  const errors = [];
+  for (const [index, plugin] of parsed.plugins.entries()) {
+    const label = plugin.name || `Plugin #${index + 1}`;
+    const hasType =
+      plugin.downloadType !== undefined && plugin.downloadType !== '';
+    const hasTokenEnv = plugin.tokenEnv !== undefined && plugin.tokenEnv !== '';
+    if (hasType !== hasTokenEnv) {
+      errors.push(
+        `${label}: downloadType and tokenEnv must both be set or both be empty/omitted.`
+      );
+    }
+    if (hasType && !['azure-devops', 'github'].includes(plugin.downloadType)) {
+      errors.push(`${label}: downloadType must be "azure-devops" or "github".`);
+    }
+    if (
+      hasTokenEnv &&
+      (typeof plugin.tokenEnv !== 'string' ||
+        !/^[A-Za-z_][A-Za-z0-9_]*$/.test(plugin.tokenEnv))
+    ) {
+      errors.push(
+        `${label}: tokenEnv must be a valid environment variable name.`
+      );
+    }
+    if (hasType && hasTokenEnv && !isValidHttpsUrl(plugin.url)) {
+      errors.push(`${label}: authenticated downloads require an https URL.`);
+    }
+  }
+  if (errors.length > 0) {
+    fail(
+      `Invalid plugin authentication configuration:\n${errors
+        .map(error => `  - ${error}`)
+        .join('\n')}`
+    );
+  }
   return { data: parsed, rawEndsWithNewline: raw.endsWith('\n') };
 }
 
@@ -341,7 +378,7 @@ function writeRemotePlugins(data, endsWithNewline) {
   fs.writeFileSync(
     REMOTE_PLUGINS_PATH,
     endsWithNewline ? json + '\n' : json,
-    'utf8',
+    'utf8'
   );
 }
 
@@ -349,7 +386,7 @@ function writeRemotePlugins(data, endsWithNewline) {
 function findPluginIndex(plugins, name) {
   const lc = name.toLowerCase();
   return plugins.findIndex(
-    p => typeof p.name === 'string' && p.name.toLowerCase() === lc,
+    p => typeof p.name === 'string' && p.name.toLowerCase() === lc
   );
 }
 
@@ -367,13 +404,33 @@ function findPluginDestIndex(plugins, dest) {
 // HTTP download
 // ---------------------------------------------------------------------------
 
-// Download an https resource. Redirects are followed automatically by the
-// built-in fetch. Resolves with the response body as a Buffer; throws on
-// non-2xx status or network error.
-async function download(urlStr) {
+// Download a resource, returning its body as a Buffer.
+async function download(urlStr, plugin = {}) {
+  const headers = { 'User-Agent': 'manage-plugins/1.0' };
+  const authenticated = Boolean(plugin.downloadType && plugin.tokenEnv);
+  if (authenticated) {
+    if (!isValidHttpsUrl(urlStr)) {
+      throw new Error('Authenticated downloads require an https URL.');
+    }
+    const token = process.env[plugin.tokenEnv];
+    if (!token || !token.trim()) {
+      throw new Error(
+        `Missing token environment variable "${plugin.tokenEnv}" for "${plugin.name}".`
+      );
+    }
+    if (plugin.downloadType === 'azure-devops') {
+      headers.Authorization = `Basic ${Buffer.from(`:${token}`).toString(
+        'base64'
+      )}`;
+    } else {
+      headers.Authorization = `Bearer ${token}`;
+      headers.Accept = 'application/vnd.github.raw+json';
+      headers['X-GitHub-Api-Version'] = '2022-11-28';
+    }
+  }
   const response = await fetch(urlStr, {
-    headers: { 'User-Agent': 'manage-plugins/1.0' },
-    redirect: 'follow',
+    headers,
+    redirect: authenticated ? 'error' : 'follow',
   });
   if (!response.ok) {
     throw new Error(`HTTP ${response.status} for ${urlStr}`);
@@ -384,27 +441,41 @@ async function download(urlStr) {
 function resolvePluginDest(dest) {
   const destPath = path.resolve(EXTERNAL_PLUGINS_DIR, dest);
   const root = path.resolve(EXTERNAL_PLUGINS_DIR);
-  if (
-    destPath !== root &&
-    !destPath.startsWith(`${root}${path.sep}`)
-  ) {
+  if (destPath !== root && !destPath.startsWith(`${root}${path.sep}`)) {
     fail(`Invalid dest path (path traversal): ${dest}`);
   }
   return destPath;
 }
 
 // Write JS to dest under distribution/external-plugins and try sibling style.css.
-async function writePluginToDisk(url, dest, js) {
+async function writePluginToDisk(url, dest, js, plugin = {}) {
   const destPath = resolvePluginDest(dest);
   const destDir = path.dirname(destPath);
   fs.mkdirSync(destDir, { recursive: true });
   fs.writeFileSync(destPath, js);
 
-  const slash = url.lastIndexOf('/');
-  const styleUrl = slash === -1 ? null : `${url.slice(0, slash)}/style.css`;
+  const styleUrl = new URL(url);
+  if (
+    plugin.downloadType === 'azure-devops' &&
+    styleUrl.searchParams.has('path')
+  ) {
+    const sourcePath = styleUrl.searchParams.get('path');
+    styleUrl.searchParams.set(
+      'path',
+      path.posix.join(path.posix.dirname(sourcePath), 'style.css')
+    );
+  } else {
+    styleUrl.pathname = path.posix.join(
+      path.posix.dirname(styleUrl.pathname),
+      'style.css'
+    );
+  }
   if (styleUrl) {
     try {
-      fs.writeFileSync(path.join(destDir, 'style.css'), await download(styleUrl));
+      fs.writeFileSync(
+        path.join(destDir, 'style.css'),
+        await download(styleUrl.href, plugin)
+      );
       process.stdout.write('  Style: Downloaded\n');
     } catch {
       try {
@@ -417,11 +488,11 @@ async function writePluginToDisk(url, dest, js) {
   return destPath;
 }
 
-async function downloadBuffer(url, label) {
+async function downloadBuffer(url, label, plugin = {}) {
   process.stdout.write(`Downloading "${label}" from ${url}...\n`);
   let buffer;
   try {
-    buffer = await download(url);
+    buffer = await download(url, plugin);
   } catch (e) {
     fail(`Failed to download from ${url}: ${e.message}`);
   }
@@ -444,22 +515,21 @@ async function cmdAdd(args) {
   if (findPluginIndex(data.plugins, args.name) !== -1) {
     fail(
       `A plugin named "${args.name}" (case-insensitive) already exists in ` +
-      'remote-plugins.json. Refusing to overwrite.',
+        'remote-plugins.json. Refusing to overwrite.'
     );
   }
   if (findPluginUrlIndex(data.plugins, args.url) !== -1) {
     fail(
       `A plugin with url "${args.url}" already exists in remote-plugins.json. ` +
-      'Refusing to overwrite.',
+        'Refusing to overwrite.'
     );
   }
   if (findPluginDestIndex(data.plugins, args.dest) !== -1) {
     fail(
       `A plugin with dest "${args.dest}" already exists in remote-plugins.json. ` +
-      'Refusing to overwrite.',
+        'Refusing to overwrite.'
     );
   }
-
 
   const buffer = await downloadBuffer(args.url, args.name);
   await writePluginToDisk(args.url, args.dest, buffer);
@@ -478,9 +548,9 @@ async function cmdAdd(args) {
 
   process.stdout.write(
     `Added plugin "${args.name}"\n` +
-    `  url  : ${newEntry.url}\n` +
-    `  dest : ${newEntry.dest}\n` +
-    `  sha256: ${formatSha256(newEntry)}\n`,
+      `  url  : ${newEntry.url}\n` +
+      `  dest : ${newEntry.dest}\n` +
+      `  sha256: ${formatSha256(newEntry)}\n`
   );
 }
 
@@ -499,8 +569,8 @@ async function cmdUpdate(args) {
   const newUrl = args.url;
   const newDest = args.dest !== undefined ? args.dest : plugin.dest;
 
-  const buffer = await downloadBuffer(newUrl, plugin.name);
-  await writePluginToDisk(newUrl, newDest, buffer);
+  const buffer = await downloadBuffer(newUrl, plugin.name, plugin);
+  await writePluginToDisk(newUrl, newDest, buffer, plugin);
 
   plugin.url = newUrl;
   plugin.dest = newDest;
@@ -514,9 +584,9 @@ async function cmdUpdate(args) {
 
   process.stdout.write(
     `Updated plugin "${plugin.name}"\n` +
-    `  url   : ${plugin.url}\n` +
-    `  dest  : ${plugin.dest}\n` +
-    `  sha256: ${formatSha256(plugin)}\n`,
+      `  url   : ${plugin.url}\n` +
+      `  dest  : ${plugin.dest}\n` +
+      `  sha256: ${formatSha256(plugin)}\n`
   );
 }
 
@@ -531,7 +601,7 @@ async function cmdUpdateEmptyHashes() {
     if (isSnapshot(plugin)) {
       skipped++;
       process.stdout.write(
-        `Skipping "${plugin.name}" (no sha256 field; snapshot).\n`,
+        `Skipping "${plugin.name}" (no sha256 field; snapshot).\n`
       );
       continue;
     }
@@ -542,13 +612,13 @@ async function cmdUpdateEmptyHashes() {
     if (!hasEmptySha256(plugin)) {
       skipped++;
       process.stdout.write(
-        `Skipping "${plugin.name}" (unexpected sha256 value).\n`,
+        `Skipping "${plugin.name}" (unexpected sha256 value).\n`
       );
       continue;
     }
 
-    const buffer = await downloadBuffer(plugin.url, plugin.name);
-    await writePluginToDisk(plugin.url, plugin.dest, buffer);
+    const buffer = await downloadBuffer(plugin.url, plugin.name, plugin);
+    await writePluginToDisk(plugin.url, plugin.dest, buffer, plugin);
     plugin.sha256 = sha256(buffer);
     updated++;
     process.stdout.write(`  sha256: ${plugin.sha256}\n`);
@@ -559,7 +629,7 @@ async function cmdUpdateEmptyHashes() {
   }
   process.stdout.write(
     `\nUpdated ${updated} hash(es), skipped ${skipped} ` +
-    `(total ${data.plugins.length}).\n`,
+      `(total ${data.plugins.length}).\n`
   );
 }
 
@@ -578,9 +648,9 @@ function cmdDelete(args) {
 
   process.stdout.write(
     `Deleted plugin "${removed.name}"\n` +
-    `  url   : ${removed.url}\n` +
-    `  dest  : ${removed.dest}\n` +
-    `  sha256: ${formatSha256(removed)}\n`,
+      `  url   : ${removed.url}\n` +
+      `  dest  : ${removed.dest}\n` +
+      `  sha256: ${formatSha256(removed)}\n`
   );
 }
 
@@ -599,15 +669,15 @@ function cmdList() {
     const plugin = plugins[i];
     process.stdout.write(
       `[${i + 1}] ${plugin.name}\n` +
-      `  url   : ${plugin.url}\n` +
-      `  dest  : ${plugin.dest}\n` +
-      `  sha256: ${
-        hasPinnedSha256(plugin)
-          ? '(set)'
-          : hasEmptySha256(plugin)
+        `  url   : ${plugin.url}\n` +
+        `  dest  : ${plugin.dest}\n` +
+        `  sha256: ${
+          hasPinnedSha256(plugin)
+            ? '(set)'
+            : hasEmptySha256(plugin)
             ? '(empty)'
             : '(omitted / snapshot)'
-      }\n`,
+        }\n`
     );
     if (i < plugins.length - 1) {
       process.stdout.write('\n');
@@ -639,7 +709,7 @@ async function cmdVerify(args) {
     process.stdout.write(`Verifying "${plugin.name}" (${plugin.url})... `);
     let buffer;
     try {
-      buffer = await download(plugin.url);
+      buffer = await download(plugin.url, plugin);
     } catch (e) {
       failed++;
       failures.push(`${plugin.name}: download error - ${e.message}`);
@@ -665,10 +735,10 @@ async function cmdVerify(args) {
     if (!hasPinnedSha256(plugin)) {
       failed++;
       failures.push(
-        `${plugin.name}: empty sha256 (run update-empty-hashes, or use --allow-insecure)`,
+        `${plugin.name}: empty sha256 (run update-empty-hashes, or use --allow-insecure)`
       );
       process.stdout.write(
-        'FAIL (empty sha256; run update-empty-hashes or use --allow-insecure)\n',
+        'FAIL (empty sha256; run update-empty-hashes or use --allow-insecure)\n'
       );
       continue;
     }
@@ -679,17 +749,15 @@ async function cmdVerify(args) {
     } else {
       failed++;
       failures.push(
-        `${plugin.name}: sha256 mismatch (expected ${plugin.sha256}, got ${actual})`,
+        `${plugin.name}: sha256 mismatch (expected ${plugin.sha256}, got ${actual})`
       );
-      process.stdout.write(
-        `FAIL (expected ${plugin.sha256}, got ${actual})\n`,
-      );
+      process.stdout.write(`FAIL (expected ${plugin.sha256}, got ${actual})\n`);
     }
   }
 
   process.stdout.write(
     `\nSummary: ${ok} ok, ${skipped} skipped, ${failed} failed ` +
-    `(total ${plugins.length}).\n`,
+      `(total ${plugins.length}).\n`
   );
   if (failed > 0) {
     process.stderr.write('\nFailures:\n');
@@ -710,59 +778,63 @@ async function cmdDownload() {
   const requireSha256 = process.env.REQUIRE_SHA256 === 'true';
   process.stdout.write(
     `Downloading ${plugins.length} plugin(s) from '${REMOTE_PLUGINS_PATH}' ` +
-    `into '${EXTERNAL_PLUGINS_DIR}'...\n`,
+      `into '${EXTERNAL_PLUGINS_DIR}'...\n`
   );
 
   for (const [i, plugin] of plugins.entries()) {
     const destPath = resolvePluginDest(plugin.dest);
     process.stdout.write(
       `\n[${i + 1}/${plugins.length}] ${plugin.name}\n` +
-      `  URL : ${plugin.url}\n` +
-      `  Dest: ${destPath}\n`,
+        `  URL : ${plugin.url}\n` +
+        `  Dest: ${destPath}\n`
     );
 
     if (hasPinnedSha256(plugin) && fs.existsSync(destPath)) {
       const existing = fs.readFileSync(destPath);
       if (sha256(existing) === plugin.sha256) {
-        process.stdout.write('  Cache: hit (sha256 matches), skipping download\n');
+        process.stdout.write(
+          '  Cache: hit (sha256 matches), skipping download\n'
+        );
         continue;
       }
-      process.stdout.write('  Cache: stale (sha256 mismatch), re-downloading\n');
+      process.stdout.write(
+        '  Cache: stale (sha256 mismatch), re-downloading\n'
+      );
     }
 
-    const js = await downloadBuffer(plugin.url, plugin.name);
+    const js = await downloadBuffer(plugin.url, plugin.name, plugin);
 
     if (hasPinnedSha256(plugin)) {
       const actual = sha256(js);
       if (actual !== plugin.sha256) {
         fail(
           `SHA256 mismatch for plugin '${plugin.name}'.\n` +
-          `  Expected : ${plugin.sha256}\n` +
-          `  Actual   : ${actual}`,
+            `  Expected : ${plugin.sha256}\n` +
+            `  Actual   : ${actual}`
         );
       }
       process.stdout.write('  SHA256 OK\n');
     } else if (hasEmptySha256(plugin)) {
       process.stderr.write(
-        `  WARNING: Empty sha256 for plugin '${plugin.name}' (not cached).\n`,
+        `  WARNING: Empty sha256 for plugin '${plugin.name}' (not cached).\n`
       );
       if (requireSha256) {
         fail(`REQUIRE_SHA256=true but sha256 is empty for '${plugin.name}'.`);
       }
     } else {
       process.stderr.write(
-        `  WARNING: No sha256 for plugin '${plugin.name}' (snapshot, always downloaded).\n`,
+        `  WARNING: No sha256 for plugin '${plugin.name}' (snapshot, always downloaded).\n`
       );
       if (requireSha256) {
         fail(`REQUIRE_SHA256=true but no sha256 for '${plugin.name}'.`);
       }
     }
 
-    await writePluginToDisk(plugin.url, plugin.dest, js);
+    await writePluginToDisk(plugin.url, plugin.dest, js, plugin);
   }
 
   process.stdout.write(
-    `\nAll ${plugins.length} plugin(s) downloaded successfully.\n`,
+    `\nAll ${plugins.length} plugin(s) downloaded successfully.\n`
   );
 }
 

@@ -35,6 +35,22 @@
       "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/location-manager/3.0.3/index.js",
       "dest": "compas-transnetbw-plugins/plugins/location-manager/index.js",
       "sha256": "8c12eeff8fd9e39c4501c2efb141852e9ad93de1c4257c549c76dc117afccb7f"
+    },
+    {
+      "name": "plugins-hub",
+      "downloadType": "github",
+      "tokenEnv": "GITHUB_ASE_COMPAS_PLUGINS_TOKEN",
+      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/plugins-hub/3.0.3/index.js",
+      "dest": "compas-transnetbw-plugins/plugins/plugins-hub/index.js",
+      "sha256": "8c12eeff8fd9e39c4501c2efb141852e9ad93de1c4257c549c76dc117afccb7f"
+    },
+    {
+      "name": "location-manager",
+      "downloadType": "azure-devops",
+      "tokenEnv": "AZURE_WEIDMUELLER_PLUGINS_TOKEN",
+      "url": "https://dev.azure.com/wm-gti/GTI/_apis/git/repositories/weidmueller-compas-plugins/items?versionDescriptor.version=develop&versionDescriptor.versionType=branch&download=true&api-version=7.1&path=/plugins/index.js",
+      "dest": "compas-transnetbw-plugins/plugins/location-manager/index.js",
+      "sha256": "8c12eeff8fd9e39c4501c2efb141852e9ad93de1c4257c549c76dc117afccb7f"
     }
   ]
 }

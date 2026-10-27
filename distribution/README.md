@@ -29,6 +29,8 @@ Plugins are defined in [`remote-plugins.json`](./remote-plugins.json) at the rep
   "plugins": [
     {
       "name": "Human-readable name shown in build logs",
+      "downloadType": "",
+      "tokenEnv": "",
       "url": "https://example.com/path/to/plugin.js",
       "dest": "relative/dest/within/external-plugins",
       "sha256": "64-character hex SHA-256 digest (omit to skip verification for snapshots)"
@@ -45,6 +47,40 @@ Plugins are defined in [`remote-plugins.json`](./remote-plugins.json) at the rep
 | `sha256` | ⚠️       | Hex SHA-256 of the JS file. Present and non-empty: integrity check and download cache. `""`: pin intended but digest not filled yet (`plugins:update-empty-hashes`). Omit the field for SNAPSHOT URLs that must always be downloaded. |
 
 ## Managing plugins
+
+### Optional authentication
+
+Set both `downloadType` and `tokenEnv` on a plugin to enable authentication:
+
+```json
+{
+  "name": "Private GitHub plugin",
+  "downloadType": "github",
+  "tokenEnv": "GITHUB_TOKEN",
+  "url": "https://api.github.com/repos/OWNER/REPO/contents/plugins/index.js?ref=develop",
+  "dest": "private-plugin/index.js"
+}
+```
+
+- `downloadType`: `github` (Bearer token, raw file response) or `azure-devops`
+  (Basic authentication with an empty username and the PAT as password).
+- `tokenEnv`: Name of the environment variable containing the token, never the
+  token itself. Provide it in the environment of the Node.js process.
+- Both fields empty (`""`) or omitted: no authentication, even if a token exists
+  in the environment. Existing public plugins remain anonymous.
+- Only one field configured: configuration error. All authentication configuration
+  errors across the registry are collected and printed together before any download;
+  the command exits non-zero. Unknown types and invalid variable names also fail.
+
+For Azure DevOps, use `"downloadType": "azure-devops"` and, for example,
+`"tokenEnv": "AZDO_PAT"`. The URL must return raw file content, for example:
+`https://dev.azure.com/ORG/PROJECT/_apis/git/repositories/REPO/items?versionDescriptor.version=develop&versionDescriptor.versionType=branch&download=true&api-version=7.1&path=/plugins/index.js`.
+
+Authenticated downloads require HTTPS and reject redirects to prevent token
+forwarding. A missing or empty token causes the download to fail; there is no
+anonymous fallback. The same authentication applies to the optional sibling
+`style.css`; API query parameters such as the branch are preserved.
+`--allow-insecure` only controls hash verification, not authentication.
 
 Use the [`manage-plugins.js`](scripts/manage-plugins.js) helper
 (exposed as npm scripts) to manage plugin entries in `remote-plugins.json`.
