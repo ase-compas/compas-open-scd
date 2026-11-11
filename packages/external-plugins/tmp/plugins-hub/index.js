@@ -10098,13 +10098,6 @@ function tf(n, e) {
 }
 const nf = [
   {
-    prefix: "BP",
-    name: "BearingPoint Plugins",
-    icon: "https://ase-compas.github.io/compas-bearingpoint-plugins/bearingpoint.svg",
-    description: "Official BearingPoint plugin provider for OpenSCD.",
-    pluginsUrl: "https://ase-compas.github.io/compas-bearingpoint-plugins/plugins.json"
-  },
-  {
     prefix: "TBW",
     name: "TransnetBW Plugins",
     icon: "https://ase-compas.github.io/compas-transnetbw-plugins/transnetbw.svg",
