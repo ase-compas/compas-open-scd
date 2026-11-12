@@ -92,6 +92,7 @@ All URLs must use `https`.
 npm run plugins:add -- \
   --name "My Plugin" \
   --url  "https://example.com/path/to/plugin.js" \
+  [--download-type <type> --token-env <ENV_VAR>] \
   [--allow-insecure]
 ```
 
@@ -101,6 +102,11 @@ generated automatically unless `--allow-insecure` is used, which **omits**
 `sha256` (snapshot: always re-downloaded, never cached). If `--dest` is omitted
 it defaults to the URL path (without the leading `/`). Existing plugins
 with the same name, url, or dest are rejected.
+
+To use plugins from private repositories, specify both `--download-type` and
+`--token-env`. `--download-type` selects the type of the source and can be
+either `github` or `azure-devops`. `--token-env` names the environment variable
+containing the token used for the authentication.
 
 ### Update a plugin
 

@@ -77,7 +77,11 @@ function usage() {
     '  --name <name>              (required) Plugin display name',
     '  --url <url>                (required) Remote https URL to fetch from',
     '  --dest <path>              (optional) Relative destination (defaults to',
-    '                             the last URL path segment)',
+    '                                        the last URL path segment)',
+    '  --download-type <type>     (optional) github or azure-devops',
+    '                                        requires --token-env',
+    '  --token-env <name>         (optional) Environment variable holding token',
+    '                                        requires --download-type',
     '  --allow-insecure           (optional) Omit sha256 (snapshot; always downloaded)',
     '',
     'Flags for "update":',
@@ -182,6 +186,8 @@ function parseArgs(argv) {
   const args = {
     cmd: undefined,
     name: undefined,
+    downloadType: undefined,
+    tokenEnv: undefined,
     url: undefined,
     dest: undefined,
     allowInsecure: false,
@@ -219,6 +225,16 @@ function parseArgs(argv) {
         args.name = next;
         i++;
         break;
+      case '--download-type':
+        needValue();
+        args.downloadType = next;
+        i++;
+        break;
+      case '--token-env':
+        needValue();
+        args.tokenEnv = next;
+        i++;
+        break;
       case '--url':
         needValue();
         args.url = next;
@@ -253,9 +269,29 @@ function validateAddArgs(args) {
     usage();
     fail('"add" requires both --name and --url.');
   }
+
+  const hasDownloadType = args.downloadType !== undefined;
+  const hasTokenEnv = args.tokenEnv !== undefined;
+  if (hasDownloadType !== hasTokenEnv) {
+    fail(
+      '"add" requires both --download-type and --token-env when authenticating.'
+    );
+  }
+  if (hasDownloadType && !['azure-devops', 'github'].includes(args.downloadType)) {
+    fail(`Invalid --download-type "${args.downloadType}". Must be "azure-devops" or "github".`);
+  }
+  if (
+    hasTokenEnv &&
+    (typeof args.tokenEnv !== 'string' ||
+      !/^[A-Za-z_][A-Za-z0-9_]*$/.test(args.tokenEnv))
+  ) {
+    fail(`Invalid --token-env "${args.tokenEnv}". Must be a valid environment variable name.`);
+  }
+
   if (!isValidHttpsUrl(args.url)) {
     fail(`Invalid URL: "${args.url}". Must be an https URL.`);
   }
+
   if (args.dest !== undefined) {
     const normalized = normalizeDest(args.dest);
     if (normalized === null) {
@@ -335,6 +371,7 @@ function readRemotePlugins() {
   if (!parsed || !Array.isArray(parsed.plugins)) {
     fail(`Invalid ${REMOTE_PLUGINS_PATH}: expected a "plugins" array.`);
   }
+
   const errors = [];
   for (const [index, plugin] of parsed.plugins.entries()) {
     const label = plugin.name || `Plugin #${index + 1}`;
@@ -425,7 +462,7 @@ async function download(urlStr, plugin = {}) {
     } else {
       headers.Authorization = `Bearer ${token}`;
       headers.Accept = 'application/vnd.github.raw+json';
-      headers['X-GitHub-Api-Version'] = '2022-11-28';
+      headers['X-GitHub-Api-Version'] = '2026-03-10';
     }
   }
   const response = await fetch(urlStr, {
@@ -531,14 +568,16 @@ async function cmdAdd(args) {
     );
   }
 
-  const buffer = await downloadBuffer(args.url, args.name);
-  await writePluginToDisk(args.url, args.dest, buffer);
-
   const newEntry = {
     name: args.name,
+    downloadType: args.downloadType,
+    tokenEnv: args.tokenEnv,
     url: args.url,
     dest: args.dest,
   };
+
+  const buffer = await downloadBuffer(args.url, args.name, newEntry);
+  await writePluginToDisk(args.url, args.dest, buffer, newEntry);
   if (!args.allowInsecure) {
     newEntry.sha256 = sha256(buffer);
   }
