@@ -3,15 +3,15 @@ import {
   html,
   property,
   TemplateResult,
+  css,
 } from 'lit-element';
 import { get } from 'lit-translate';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { OscdApi } from '@compas-oscd/core';
+import { OscdLayout } from '@compas-oscd/open-scd/dist/addons/Layout.js';
 
 import type { UserInfoEvent } from '../compas/foundation.js';
 import type { CompasApi } from '../open-scd.js';
-
-import { OscdLayout } from '@compas-oscd/open-scd/dist/addons/Layout.js';
 
 interface RenderAblePlugin {
   src?: string;
@@ -48,13 +48,36 @@ function staticTagHtml(
 @customElement('compas-layout')
 export class CompasLayout extends OscdLayout {
   @property({ type: String }) username: string | undefined;
+
   @property({ attribute: false }) compasApi?: CompasApi;
+
+  @property({ type: Boolean, reflect: true, attribute: 'hide-editor-tabs' })
+  hideEditorTabs = false;
+
+  static styles = css`
+    ${OscdLayout.styles}
+
+    :host([hide-editor-tabs]) oscd-menu-tabs {
+      display: none !important;
+    }
+  `;
+
+  private readonly onToggleEditorTabs = (event: Event): void => {
+    const { detail } = event as CustomEvent<{ visible?: boolean }>;
+    this.hideEditorTabs = !(detail?.visible ?? true);
+  };
 
   connectedCallback(): void {
     super.connectedCallback();
 
     this.onUserInfo = this.onUserInfo.bind(this);
     this.host.addEventListener('userinfo', this.onUserInfo);
+    this.addEventListener('toggle-editor-tabs', this.onToggleEditorTabs);
+  }
+
+  disconnectedCallback(): void {
+    this.removeEventListener('toggle-editor-tabs', this.onToggleEditorTabs);
+    super.disconnectedCallback();
   }
 
   private onUserInfo(event: UserInfoEvent) {
