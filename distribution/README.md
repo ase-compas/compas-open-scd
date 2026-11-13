@@ -113,14 +113,16 @@ containing the token used for the authentication.
 ```sh
 npm run plugins:update -- \
   --name "My Plugin" \
-  --url <new-url> \
+  [--url <new-url>] \
   [--dest <new-dest>] \
+  [--download-type <type> --token-env <ENV_VAR>] \
   [--allow-insecure]
 ```
 
-The flags `--name` and `--url` are required. The script finds the existing
-entry by name, re-downloads the JS into `distribution/external-plugins`, and
-recomputes `sha256` unless `--allow-insecure` is used (then `sha256` is omitted).
+The flag `--name` is required. Specify at least one of `--url`, `--dest`, or both
+`--download-type` and `--token-env`. The script finds the existing entry by name,
+re-downloads the JS into `distribution/external-plugins`, and recomputes `sha256`
+unless `--allow-insecure` is used (then `sha256` is omitted).
 
 ### Download plugins
 
