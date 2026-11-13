@@ -40,17 +40,17 @@
       "name": "plugins-hub",
       "downloadType": "github",
       "tokenEnv": "GITHUB_ASE_COMPAS_PLUGINS_TOKEN",
-      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/plugins-hub/3.0.3/index.js",
-      "dest": "compas-transnetbw-plugins/plugins/plugins-hub/index.js",
-      "sha256": "8c12eeff8fd9e39c4501c2efb141852e9ad93de1c4257c549c76dc117afccb7f"
+      "url": "https://raw.githubusercontent.com/ase-compas/compas-bearingpoint-plugins/refs/heads/gh-pages/compas/plugins/plugins-hub/0.0.7/index.js",
+      "dest": "compas-bearingpoint-plugins/plugins/plugins-hub/index.js",
+      "sha256": "2ad35c68052a046aa63361d6a7aa71ab51198c2c7f99f0e27ba27baad6f75277"
     },
     {
-      "name": "location-manager",
-      "downloadType": "azure-devops",
-      "tokenEnv": "AZURE_WEIDMUELLER_PLUGINS_TOKEN",
-      "url": "https://dev.azure.com/wm-gti/GTI/_apis/git/repositories/weidmueller-compas-plugins/items?versionDescriptor.version=develop&versionDescriptor.versionType=branch&download=true&api-version=7.1&path=/plugins/index.js",
-      "dest": "compas-transnetbw-plugins/plugins/location-manager/index.js",
-      "sha256": "8c12eeff8fd9e39c4501c2efb141852e9ad93de1c4257c549c76dc117afccb7f"
+      "name": "plugins-hub-2",
+      "downloadType": "github",
+      "tokenEnv": "GITHUB_ASE_COMPAS_PLUGINS_TOKEN",
+      "url": "https://api.github.com/repos/ase-compas/compas-bearingpoint-plugins/contents/compas/plugins/plugins-hub/0.0.4/index.js?ref=gh-pages",
+      "dest": "compas-bearingpoint-plugins/plugins/plugins-hub-2/index.js",
+      "sha256": "a3ba4b0a4034e8a3178f1f1d2338ec640bb79196639f0f453dec955f593a2d18"
     }
   ]
 }

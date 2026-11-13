@@ -26,6 +26,8 @@ jobs:
           node-version: '24.x'
 
       - name: Install and Test
+        env:
+          GITHUB_ASE_COMPAS_PLUGINS_TOKEN: ${{ secrets.ASE_COMPAS_PLUGINS_TOKEN }}
         run: |
           pnpm ci
           pnpm run-script build
