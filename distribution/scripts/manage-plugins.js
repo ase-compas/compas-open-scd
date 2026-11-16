@@ -183,6 +183,16 @@ function formatSha256(plugin) {
   return plugin.sha256;
 }
 
+// downloadType present and non-empty: use authenticated download with tokenEnv.
+function hasDownloadType(plugin) {
+  return typeof plugin.downloadType === 'string' && plugin.downloadType.length > 0;
+}
+
+// tokenEnv present and non-empty: use authenticated download with downloadType.
+function hasTokenEnv(plugin) {
+  return typeof plugin.tokenEnv === 'string' && plugin.tokenEnv.length > 0;
+}
+
 // ---------------------------------------------------------------------------
 // Argument parsing
 // ---------------------------------------------------------------------------
@@ -326,6 +336,7 @@ function validateUpdateArgs(args) {
     !hasDownloadType &&
     !hasTokenEnv
   ) {
+    usage();
     fail('"update" requires at least one of --url, --dest, or both authentication flags.');
   }
 
@@ -407,23 +418,23 @@ function readRemotePlugins() {
   const errors = [];
   for (const [index, plugin] of parsed.plugins.entries()) {
     const label = plugin.name || `Plugin #${index + 1}`;
-    const hasType = plugin.downloadType !== undefined && plugin.downloadType !== '';
-    const hasTokenEnv = plugin.tokenEnv !== undefined && plugin.tokenEnv !== '';
-    if (hasType !== hasTokenEnv) {
+    const hasAuthType = hasDownloadType(plugin);
+    const hasAuthEnv = hasTokenEnv(plugin);
+    if (hasAuthType !== hasAuthEnv) {
       errors.push(
         `${label}: downloadType and tokenEnv must both be set or both be empty/omitted.`
       );
     }
-    if (hasType && !['github', 'azure-devops'].includes(plugin.downloadType)) {
+    if (hasAuthType && !['github', 'azure-devops'].includes(plugin.downloadType)) {
       errors.push(`${label}: downloadType must be "github" or "azure-devops".`);
     }
     if (
-      hasTokenEnv &&
+      hasAuthEnv &&
       (typeof plugin.tokenEnv !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(plugin.tokenEnv))
     ) {
       errors.push(`${label}: tokenEnv must be a valid environment variable name.`);
     }
-    if (hasType && hasTokenEnv && !isValidHttpsUrl(plugin.url)) {
+    if (hasAuthType && hasAuthEnv && !isValidHttpsUrl(plugin.url)) {
       errors.push(`${label}: authenticated downloads require an https URL.`);
     }
   }
@@ -469,10 +480,12 @@ function findPluginDestIndex(plugins, dest) {
 // HTTP download
 // ---------------------------------------------------------------------------
 
-// Download a resource, returning its body as a Buffer.
+// Download an https resource. Redirects are followed for non-authenticated
+// downloads by the built-in fetch. Resolves with the response body as a Buffer;
+// throws on non-2xx status or network error.
 async function download(urlStr, plugin = {}) {
   const headers = { 'User-Agent': 'manage-plugins/1.0' };
-  const authenticated = Boolean(plugin.downloadType && plugin.tokenEnv);
+  const authenticated = Boolean(hasDownloadType(plugin) && hasTokenEnv(plugin));
   if (authenticated) {
     if (!isValidHttpsUrl(urlStr)) {
       throw new Error('Authenticated downloads require an https URL.');
@@ -480,7 +493,7 @@ async function download(urlStr, plugin = {}) {
     const token = process.env[plugin.tokenEnv];
     if (!token || !token.trim()) {
       throw new Error(
-        `Missing token environment variable "${plugin.tokenEnv}" for "${plugin.name}".`
+        `Missing token environment variable "${plugin.tokenEnv}".`
       );
     }
     if (plugin.downloadType === 'github') {
@@ -618,8 +631,8 @@ async function cmdAdd(args) {
   process.stdout.write(
     `Added plugin "${args.name}"\n` +
     `           url: ${newEntry.url}\n` +
-    `  downloadType: ${newEntry.downloadType !== undefined ? newEntry.downloadType : '(none)'}\n` +
-    `      tokenEnv: ${newEntry.tokenEnv !== undefined ? newEntry.tokenEnv : '(none)'}\n` +
+    `  downloadType: ${hasDownloadType(newEntry) ? newEntry.downloadType : '(none)'}\n` +
+    `      tokenEnv: ${hasTokenEnv(newEntry) ? newEntry.tokenEnv : '(none)'}\n` +
     `          dest: ${newEntry.dest}\n` +
     `        sha256: ${formatSha256(newEntry)}\n`,
   );
@@ -684,8 +697,8 @@ async function cmdUpdate(args) {
   process.stdout.write(
     `Updated plugin "${updatedPlugin.name}"\n` +
     `           url: ${updatedPlugin.url}\n` +
-    `  downloadType: ${updatedPlugin.downloadType !== undefined ? updatedPlugin.downloadType : '(none)'}\n` +
-    `      tokenEnv: ${updatedPlugin.tokenEnv !== undefined ? updatedPlugin.tokenEnv : '(none)'}\n` +
+    `  downloadType: ${hasDownloadType(updatedPlugin) ? updatedPlugin.downloadType : '(none)'}\n` +
+    `      tokenEnv: ${hasTokenEnv(updatedPlugin) ? updatedPlugin.tokenEnv : '(none)'}\n` +
     `          dest: ${updatedPlugin.dest}\n` +
     `        sha256: ${formatSha256(updatedPlugin)}\n`,
   );
@@ -750,8 +763,8 @@ function cmdDelete(args) {
   process.stdout.write(
     `Deleted plugin "${removed.name}"\n` +
     `           url: ${removed.url}\n` +
-    `  downloadType: ${removed.downloadType !== undefined ? removed.downloadType : '(none)'}\n` +
-    `      tokenEnv: ${removed.tokenEnv !== undefined ? removed.tokenEnv : '(none)'}\n` +
+    `  downloadType: ${hasDownloadType(removed) ? removed.downloadType : '(none)'}\n` +
+    `      tokenEnv: ${hasTokenEnv(removed) ? removed.tokenEnv : '(none)'}\n` +
     `          dest: ${removed.dest}\n` +
     `        sha256: ${formatSha256(removed)}\n`,
   );
@@ -773,8 +786,8 @@ function cmdList() {
     process.stdout.write(
       `[${i + 1}] ${plugin.name}\n` +
       `           url: ${plugin.url}\n` +
-      `  downloadType: ${plugin.downloadType !== undefined ? plugin.downloadType : '(none)'}\n` +
-      `      tokenEnv: ${plugin.tokenEnv !== undefined ? plugin.tokenEnv : '(none)'}\n` +
+      `  downloadType: ${hasDownloadType(plugin) ? plugin.downloadType : '(none)'}\n` +
+      `      tokenEnv: ${hasTokenEnv(plugin) ? plugin.tokenEnv : '(none)'}\n` +
       `          dest: ${plugin.dest}\n` +
       `        sha256: ${
         hasPinnedSha256(plugin)
@@ -893,7 +906,7 @@ async function cmdDownload() {
     process.stdout.write(
       `\n[${i + 1}/${plugins.length}] ${plugin.name}\n` +
       `    URL: ${plugin.url}\n` +
-      `   Auth: ${plugin.downloadType || '(none)'}\n` +
+      `   Auth: ${hasDownloadType(plugin) ? plugin.downloadType : '(none)'}\n` +
       `   Dest: ${destPath}\n`,
     );
 
