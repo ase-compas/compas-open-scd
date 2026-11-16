@@ -68,7 +68,8 @@ function usage() {
     '',
     'Commands:',
     '  add                    Add a plugin to remote-plugins.json',
-    '  update                 Change url, dest, and/or authentication (re-downloads sha256)',
+    '  update                 Change url, dest, and/or authentication of an existing',
+    '                         plugin (re-downloads sha256)',
     '  update-empty-hashes    Fill sha256 for entries that currently have ""',
     '  delete                 Remove a plugin from remote-plugins.json by plugin name',
     '  list                   List current entries from remote-plugins.json',
@@ -90,9 +91,9 @@ function usage() {
     '  --name <name>              (required) Existing plugin name',
     '  --url <url>                (optional) New https URL',
     '  --dest <path>              (optional) New destination',
-    '  --download-type <type>     (optional) github or azure-devops',
+    '  --download-type <type>     (optional) Empty, github or azure-devops',
     '                                        requires --token-env',
-    '  --token-env <name>         (optional) New environment variable holding token',
+    '  --token-env <name>         (optional) Empty or environment variable holding token',
     '                                        requires --download-type',
     '  --allow-insecure           (optional) Omit sha256 (snapshot; always downloaded)',
     '  (the name must match an existing plugin entry)',
@@ -332,17 +333,30 @@ function validateUpdateArgs(args) {
     fail(`Invalid URL: "${args.url}". Must be an https URL.`);
   }
 
-  if (hasDownloadType !== hasTokenEnv) {
-    fail('"update" requires both --download-type and --token-env for changing authentication.');
+  if (
+    hasDownloadType !== hasTokenEnv ||
+    (hasDownloadType && (args.downloadType === '') !== (args.tokenEnv === ''))
+  ) {
+    fail(
+      '"update" requires both --download-type and --token-env to be ' +
+        'set to change authentication or empty to remove authentication.',
+    );
   }
-  if (hasDownloadType && !['github', 'azure-devops'].includes(args.downloadType)) {
-    fail(`Invalid --download-type "${args.downloadType}". Must be "github" or "azure-devops".`);
+  if (hasDownloadType && !['', 'github', 'azure-devops'].includes(args.downloadType)) {
+    fail(
+      `Invalid --download-type "${args.downloadType}". ` +
+      'Must be empty, "github" or "azure-devops".',
+    );
   }
   if (
     hasTokenEnv &&
-    (typeof args.tokenEnv !== 'string' || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(args.tokenEnv))
+    (typeof args.tokenEnv !== 'string' ||
+      (args.tokenEnv !== '' && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(args.tokenEnv)))
   ) {
-    fail(`Invalid --token-env "${args.tokenEnv}". Must be a valid environment variable name.`);
+    fail(
+      `Invalid --token-env "${args.tokenEnv}". ` +
+      'Must be empty or a valid environment variable name.',
+    );
   }
   if (args.dest !== undefined) {
     const normalized = normalizeDest(args.dest);
@@ -585,9 +599,9 @@ async function cmdAdd(args) {
 
   const newEntry = {
     name: args.name,
+    url: args.url,
     downloadType: args.downloadType,
     tokenEnv: args.tokenEnv,
-    url: args.url,
     dest: args.dest,
   };
 
@@ -603,15 +617,11 @@ async function cmdAdd(args) {
 
   process.stdout.write(
     `Added plugin "${args.name}"\n` +
-      (newEntry.downloadType !== undefined
-        ? `  downloadType: ${newEntry.downloadType}\n`
-        : '') +
-      (newEntry.tokenEnv !== undefined
-        ? `  tokenEnv    : ${newEntry.tokenEnv}\n`
-        : '') +
-      `  url  : ${newEntry.url}\n` +
-      `  dest : ${newEntry.dest}\n` +
-      `  sha256: ${formatSha256(newEntry)}\n`,
+    `           url: ${newEntry.url}\n` +
+    `  downloadType: ${newEntry.downloadType !== undefined ? newEntry.downloadType : '(none)'}\n` +
+    `      tokenEnv: ${newEntry.tokenEnv !== undefined ? newEntry.tokenEnv : '(none)'}\n` +
+    `          dest: ${newEntry.dest}\n` +
+    `        sha256: ${formatSha256(newEntry)}\n`,
   );
 }
 
@@ -629,12 +639,16 @@ async function cmdUpdate(args) {
   const plugin = data.plugins[idx];
   const updatedPlugin = {
     name: plugin.name,
+    url: args.url !== undefined ? args.url : plugin.url,
     downloadType: args.downloadType !== undefined ? args.downloadType : plugin.downloadType,
     tokenEnv: args.tokenEnv !== undefined ? args.tokenEnv : plugin.tokenEnv,
-    url: args.url !== undefined ? args.url : plugin.url,
     dest: args.dest !== undefined ? args.dest : plugin.dest,
     sha256: plugin.sha256,
   };
+  if (updatedPlugin.downloadType === '' && updatedPlugin.tokenEnv === '') {
+    delete updatedPlugin.downloadType;
+    delete updatedPlugin.tokenEnv;
+  }
 
   if (
     updatedPlugin.url !== plugin.url &&
@@ -669,15 +683,11 @@ async function cmdUpdate(args) {
 
   process.stdout.write(
     `Updated plugin "${updatedPlugin.name}"\n` +
-      (updatedPlugin.downloadType !== undefined
-        ? `  downloadType: ${updatedPlugin.downloadType}\n`
-        : '') +
-      (updatedPlugin.tokenEnv !== undefined
-        ? `  tokenEnv    : ${updatedPlugin.tokenEnv}\n`
-        : '') +
-      `  url   : ${updatedPlugin.url}\n` +
-      `  dest  : ${updatedPlugin.dest}\n` +
-      `  sha256: ${formatSha256(updatedPlugin)}\n`,
+    `           url: ${updatedPlugin.url}\n` +
+    `  downloadType: ${updatedPlugin.downloadType !== undefined ? updatedPlugin.downloadType : '(none)'}\n` +
+    `      tokenEnv: ${updatedPlugin.tokenEnv !== undefined ? updatedPlugin.tokenEnv : '(none)'}\n` +
+    `          dest: ${updatedPlugin.dest}\n` +
+    `        sha256: ${formatSha256(updatedPlugin)}\n`,
   );
 }
 
@@ -739,9 +749,11 @@ function cmdDelete(args) {
 
   process.stdout.write(
     `Deleted plugin "${removed.name}"\n` +
-    `  url   : ${removed.url}\n` +
-    `  dest  : ${removed.dest}\n` +
-    `  sha256: ${formatSha256(removed)}\n`,
+    `           url: ${removed.url}\n` +
+    `  downloadType: ${removed.downloadType !== undefined ? removed.downloadType : '(none)'}\n` +
+    `      tokenEnv: ${removed.tokenEnv !== undefined ? removed.tokenEnv : '(none)'}\n` +
+    `          dest: ${removed.dest}\n` +
+    `        sha256: ${formatSha256(removed)}\n`,
   );
 }
 
@@ -760,9 +772,11 @@ function cmdList() {
     const plugin = plugins[i];
     process.stdout.write(
       `[${i + 1}] ${plugin.name}\n` +
-      `  url   : ${plugin.url}\n` +
-      `  dest  : ${plugin.dest}\n` +
-      `  sha256: ${
+      `           url: ${plugin.url}\n` +
+      `  downloadType: ${plugin.downloadType !== undefined ? plugin.downloadType : '(none)'}\n` +
+      `      tokenEnv: ${plugin.tokenEnv !== undefined ? plugin.tokenEnv : '(none)'}\n` +
+      `          dest: ${plugin.dest}\n` +
+      `        sha256: ${
         hasPinnedSha256(plugin)
           ? '(set)'
           : hasEmptySha256(plugin)
@@ -878,8 +892,9 @@ async function cmdDownload() {
     const destPath = resolvePluginDest(plugin.dest);
     process.stdout.write(
       `\n[${i + 1}/${plugins.length}] ${plugin.name}\n` +
-      `  URL : ${plugin.url}\n` +
-      `  Dest: ${destPath}\n`,
+      `    URL: ${plugin.url}\n` +
+      `   Auth: ${plugin.downloadType || '(none)'}\n` +
+      `   Dest: ${destPath}\n`,
     );
 
     if (hasPinnedSha256(plugin) && fs.existsSync(destPath)) {
