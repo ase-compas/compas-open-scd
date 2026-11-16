@@ -417,7 +417,16 @@ function readRemotePlugins() {
 
   const errors = [];
   for (const [index, plugin] of parsed.plugins.entries()) {
-    const label = plugin.name || `Plugin #${index + 1}`;
+    const label = plugin.name
+      ? `${plugin.name} (Plugin #${index + 1})`
+      : `Plugin #${index + 1}`;
+    if (!plugin.name) {
+      errors.push(`${label}: name must not be empty.`);
+    }
+    if (!plugin.url || !isValidHttpsUrl(plugin.url)) {
+      errors.push(`${label}: URL must be a valid https URL.`);
+    }
+
     const hasAuthType = hasDownloadType(plugin);
     const hasAuthEnv = hasTokenEnv(plugin);
     if (hasAuthType !== hasAuthEnv) {
@@ -434,13 +443,15 @@ function readRemotePlugins() {
     ) {
       errors.push(`${label}: tokenEnv must be a valid environment variable name.`);
     }
-    if (hasAuthType && hasAuthEnv && !isValidHttpsUrl(plugin.url)) {
-      errors.push(`${label}: authenticated downloads require an https URL.`);
+
+    if (!plugin.dest || normalizeDest(plugin.dest) === null) {
+      errors.push(`${label}: dest must be a relative path with no leading ` +
+        'slash, backslashes, or ".."/"." segments.');
     }
   }
   if (errors.length > 0) {
     fail(
-      `Invalid plugin authentication configuration:\n${errors
+      `Invalid plugins configuration:\n${errors
         .map(error => `  - ${error}`)
         .join('\n')}`
     );
@@ -483,24 +494,21 @@ function findPluginDestIndex(plugins, dest) {
 // Download an https resource. Redirects are followed for non-authenticated
 // downloads by the built-in fetch. Resolves with the response body as a Buffer;
 // throws on non-2xx status or network error.
-async function download(urlStr, plugin = {}) {
+async function download(urlStr, auth = {}) {
   const headers = { 'User-Agent': 'manage-plugins/1.0' };
-  const authenticated = Boolean(hasDownloadType(plugin) && hasTokenEnv(plugin));
+  const authenticated = Boolean(hasDownloadType(auth) && hasTokenEnv(auth));
   if (authenticated) {
-    if (!isValidHttpsUrl(urlStr)) {
-      throw new Error('Authenticated downloads require an https URL.');
-    }
-    const token = process.env[plugin.tokenEnv];
+    const token = process.env[auth.tokenEnv];
     if (!token || !token.trim()) {
       throw new Error(
-        `Missing token environment variable "${plugin.tokenEnv}".`
+        `Missing token environment variable "${auth.tokenEnv}".`
       );
     }
-    if (plugin.downloadType === 'github') {
+    if (auth.downloadType === 'github') {
       headers.Authorization = `Bearer ${token}`;
       headers.Accept = 'application/vnd.github.raw+json';
       headers['X-GitHub-Api-Version'] = '2026-03-10';
-    } else if (plugin.downloadType === 'azure-devops') {
+    } else if (auth.downloadType === 'azure-devops') {
       headers.Authorization = `Basic ${Buffer.from(`:${token}`).toString('base64')}`;
     }
   }
@@ -527,13 +535,13 @@ function resolvePluginDest(dest) {
 }
 
 // Write JS to dest under distribution/external-plugins and try sibling style.css.
-async function writePluginToDisk(url, dest, js, plugin = {}) {
-  const destPath = resolvePluginDest(dest);
+async function writePluginToDisk(plugin, js) {
+  const destPath = resolvePluginDest(plugin.dest);
   const destDir = path.dirname(destPath);
   fs.mkdirSync(destDir, { recursive: true });
   fs.writeFileSync(destPath, js);
 
-  const styleUrl = new URL(url);
+  const styleUrl = new URL(plugin.url);
   if (
     plugin.downloadType === 'azure-devops' &&
     styleUrl.searchParams.has('path')
@@ -553,7 +561,10 @@ async function writePluginToDisk(url, dest, js, plugin = {}) {
     try {
       fs.writeFileSync(
         path.join(destDir, 'style.css'),
-        await download(styleUrl.href, plugin),
+        await download(styleUrl.href, {
+          downloadType: plugin.downloadType,
+          tokenEnv: plugin.tokenEnv,
+        }),
       );
       process.stdout.write('  Style: Downloaded\n');
     } catch {
@@ -567,16 +578,19 @@ async function writePluginToDisk(url, dest, js, plugin = {}) {
   return destPath;
 }
 
-async function downloadBuffer(url, label, plugin = {}) {
-  process.stdout.write(`Downloading "${label}" from ${url}...\n`);
+async function downloadBuffer(plugin) {
+  process.stdout.write(`Downloading "${plugin.name}" from ${plugin.url}...\n`);
   let buffer;
   try {
-    buffer = await download(url, plugin);
+    buffer = await download(plugin.url, {
+      downloadType: plugin.downloadType,
+      tokenEnv: plugin.tokenEnv,
+    });
   } catch (e) {
-    fail(`Failed to download from ${url}: ${e.message}`);
+    fail(`Failed to download from ${plugin.url}: ${e.message}`);
   }
   if (!buffer || buffer.length === 0) {
-    fail(`Downloaded content from ${url} is empty.`);
+    fail(`Downloaded content from ${plugin.url} is empty.`);
   }
   return buffer;
 }
@@ -618,8 +632,8 @@ async function cmdAdd(args) {
     dest: args.dest,
   };
 
-  const buffer = await downloadBuffer(args.url, args.name, newEntry);
-  await writePluginToDisk(args.url, args.dest, buffer, newEntry);
+  const buffer = await downloadBuffer(newEntry);
+  await writePluginToDisk(newEntry, buffer);
 
   if (!args.allowInsecure) {
     newEntry.sha256 = sha256(buffer);
@@ -682,8 +696,8 @@ async function cmdUpdate(args) {
     );
   }
 
-  const buffer = await downloadBuffer(updatedPlugin.url, updatedPlugin.name, updatedPlugin);
-  await writePluginToDisk(updatedPlugin.url, updatedPlugin.dest, buffer, updatedPlugin);
+  const buffer = await downloadBuffer(updatedPlugin);
+  await writePluginToDisk(updatedPlugin, buffer);
 
   if (args.allowInsecure) {
     delete updatedPlugin.sha256;
@@ -731,8 +745,8 @@ async function cmdUpdateEmptyHashes() {
       continue;
     }
 
-    const buffer = await downloadBuffer(plugin.url, plugin.name, plugin);
-    await writePluginToDisk(plugin.url, plugin.dest, buffer, plugin);
+    const buffer = await downloadBuffer(plugin);
+    await writePluginToDisk(plugin, buffer);
     plugin.sha256 = sha256(buffer);
     updated++;
     process.stdout.write(`  sha256: ${plugin.sha256}\n`);
@@ -827,7 +841,10 @@ async function cmdVerify(args) {
     process.stdout.write(`Verifying "${plugin.name}" (${plugin.url})... `);
     let buffer;
     try {
-      buffer = await download(plugin.url, plugin);
+      buffer = await download(plugin.url, {
+        downloadType: plugin.downloadType,
+        tokenEnv: plugin.tokenEnv,
+      });
     } catch (e) {
       failed++;
       failures.push(`${plugin.name}: download error - ${e.message}`);
@@ -919,7 +936,7 @@ async function cmdDownload() {
       process.stdout.write('  Cache: stale (sha256 mismatch), re-downloading\n');
     }
 
-    const js = await downloadBuffer(plugin.url, plugin.name, plugin);
+    const js = await downloadBuffer(plugin);
 
     if (hasPinnedSha256(plugin)) {
       const actual = sha256(js);
@@ -947,7 +964,7 @@ async function cmdDownload() {
       }
     }
 
-    await writePluginToDisk(plugin.url, plugin.dest, js, plugin);
+    await writePluginToDisk(plugin, js);
   }
 
   process.stdout.write(
