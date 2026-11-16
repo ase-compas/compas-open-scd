@@ -19,14 +19,18 @@ jobs:
         uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           cache: true
-          
+
       - name: Use Node.js 24.x
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 #v6
         with:
           node-version: '24.x'
 
       - name: Install and Test
+        env:
+          GITHUB_ASE_COMPAS_PLUGINS_TOKEN: ${{ secrets.ASE_COMPAS_PLUGINS_TOKEN }}
+          AZURE_DEVOPS_PLUGINS_TOKEN: ${{ secrets.AZURE_DEVOPS_PLUGINS_TOKEN }}
         run: |
           pnpm ci
           pnpm run-script build
           pnpm run-script test
+          ls -R ./distribution/external-plugins
