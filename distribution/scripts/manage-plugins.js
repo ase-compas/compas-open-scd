@@ -150,8 +150,25 @@ function normalizeDest(value) {
 
 // Derive a default destination path from a URL's pathname (everything after
 // the domain, without the leading slash).
+// GitHub and Azure DevOps API URLs use the repository name followed by the file path.
 function destFromUrl(urlStr) {
   const url = new URL(urlStr);
+
+  if (url.hostname === 'api.github.com') {
+    const match =
+      /^\/repos\/(?<owner>[^/]+)\/(?<repo>[^/]+)\/contents\/(?<path>.+)$/.exec(
+        url.pathname,
+      );
+    return match ? `${match.groups.repo}/${match.groups.path}` : null;
+  } else if (url.hostname === 'dev.azure.com') {
+    const match =
+      /^\/(?<organization>[^/]+)\/(?:(?<project>[^/]+)\/)?_apis\/git\/repositories\/(?<repo>[^/]+)\/items$/.exec(
+        url.pathname,
+      );
+    const itemPath = url.searchParams.get('path')?.replace(/^\/+/, '');
+    return match && itemPath ? `${match.groups.repo}/${itemPath}` : null;
+  }
+
   const segments = url.pathname.split('/').filter(Boolean);
   if (segments.length === 0) return null;
   return segments.join('/');
