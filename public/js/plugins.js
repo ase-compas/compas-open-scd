@@ -109,7 +109,7 @@ export const officialPlugins = [
   },
   {
     name: 'Communication Explorer',
-    src: '/external-plugins/oscd-plugins/communication-explorer/0.1.0/index.js',
+    src: '/external-plugins/oscd-transnetbw-plugins/communication-explorer/index.js',
     icon: 'account_tree',
     activeByDefault: true,
     kind: 'editor',
@@ -117,7 +117,7 @@ export const officialPlugins = [
   },
   {
     name: 'Auto Doc',
-    src: '/external-plugins/oscd-plugins/auto-doc/1.19.0/index.js',
+    src: '/external-plugins/oscd-transnetbw-plugins/auto-doc/index.js',
     icon: 'description',
     activeByDefault: false,
     kind: 'editor',
@@ -125,7 +125,7 @@ export const officialPlugins = [
   },
   {
     name: 'Type Designer',
-    src: '/external-plugins/oscd-plugins/type-designer/3.17.2/index.js',
+    src: '/external-plugins/oscd-transnetbw-plugins/type-designer/index.js',
     icon: 'design_services',
     activeByDefault: true,
     kind: 'editor',
@@ -133,8 +133,16 @@ export const officialPlugins = [
   },
   {
     name: 'Type Distributor',
-    src: '/external-plugins/oscd-plugins/type-distributor/1.1.2/index.js',
+    src: '/external-plugins/oscd-transnetbw-plugins/type-distributor/index.js',
     icon: 'share',
+    activeByDefault: true,
+    kind: 'editor',
+    requireDoc: true,
+  },
+  {
+    name: 'TSLD',
+    src: '/external-plugins/compas-transnetbw-plugins/plugins/tsld/index.js',
+    icon: 'device_hub',
     activeByDefault: true,
     kind: 'editor',
     requireDoc: true,
