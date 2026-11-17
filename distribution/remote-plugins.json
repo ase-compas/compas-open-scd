@@ -2,39 +2,63 @@
   "plugins": [
     {
       "name": "engineering-wizard",
-      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/engineering-wizard/2.2.1/index.js",
+      "url": "https://transnetbw-openscd.github.io/compas-transnetbw-plugins/compas/plugins/engineering-wizard/2.3.0/index.js",
       "dest": "compas-transnetbw-plugins/plugins/engineering-wizard/index.js",
-      "sha256": "8518420bc9a501f56da6486ab8497b101e92459f4b782302b9f73a26afbef073"
+      "sha256": "0acd8333ebcdc4f91e1cf5b3800bc0dd6a6063b9aceb9c4d3f52e0af499dad6e"
     },
     {
       "name": "template-generator",
-      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/template-generator/3.0.0/index.js",
+      "url": "https://transnetbw-openscd.github.io/compas-transnetbw-plugins/compas/plugins/template-generator/3.0.0/index.js",
       "dest": "compas-transnetbw-plugins/plugins/template-generator/index.js",
       "sha256": "e17c08e55cb5a79d27e91466ae5fd07a43c7737454cea718a04acc4a4022026f"
     },
     {
       "name": "archive-explorer",
-      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/archive-explorer/2.0.5/index.js",
+      "url": "https://transnetbw-openscd.github.io/compas-transnetbw-plugins/compas/plugins/archive-explorer/2.0.5/index.js",
       "dest": "compas-transnetbw-plugins/plugins/archive-explorer/index.js",
       "sha256": "fc45d5a6bd5ac394abe42a054eaadc8ad580f57b6fed7f237e348a8d1e678061"
     },
     {
       "name": "history-viewer",
-      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/history-viewer/1.2.2/index.js",
+      "url": "https://transnetbw-openscd.github.io/compas-transnetbw-plugins/compas/plugins/history-viewer/1.2.2/index.js",
       "dest": "compas-transnetbw-plugins/plugins/history-viewer/index.js",
       "sha256": "3c42bc14e1819c65c5353e2cb94e4bcbbebdefdff07e9913b523d09ef173e901"
     },
     {
       "name": "location-viewer",
-      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/location-viewer/1.0.4/index.js",
+      "url": "https://transnetbw-openscd.github.io/compas-transnetbw-plugins/compas/plugins/location-viewer/1.0.4/index.js",
       "dest": "compas-transnetbw-plugins/plugins/location-viewer/index.js",
       "sha256": "29e3ba1954af85ee1c66bba4f88907874f0ab5385fad7c28ff79774a87f4460e"
     },
     {
       "name": "location-manager",
-      "url": "https://ase-compas.github.io/compas-transnetbw-plugins/compas/plugins/location-manager/3.0.3/index.js",
+      "url": "https://transnetbw-openscd.github.io/compas-transnetbw-plugins/compas/plugins/location-manager/3.0.3/index.js",
       "dest": "compas-transnetbw-plugins/plugins/location-manager/index.js",
       "sha256": "8c12eeff8fd9e39c4501c2efb141852e9ad93de1c4257c549c76dc117afccb7f"
+    },
+    {
+      "name": "auto-doc",
+      "url": "https://transnetbw-openscd.github.io/oscd-transnetbw-plugins/auto-doc/1.19.0/index.js",
+      "dest": "oscd-plugins/auto-doc/1.19.0/index.js",
+      "sha256": "968d8da442cd4dfbd9d400a6997a79dbe01d63f133c2704b7a2044f6dd584e8e"
+    },
+    {
+      "name": "communication-explorer",
+      "url": "https://transnetbw-openscd.github.io/oscd-transnetbw-plugins/communication-explorer/0.1.0/index.js",
+      "dest": "oscd-plugins/communication-explorer/0.1.0/index.js",
+      "sha256": "61fc52e95c590a0f17d02b753bf38e07b587b13e73bbb5b3debee97edbcf3367"
+    },
+    {
+      "name": "type-distributor",
+      "url": "https://transnetbw-openscd.github.io/oscd-transnetbw-plugins/type-distributor/1.1.2/index.js",
+      "dest": "oscd-plugins/type-distributor/1.1.2/index.js",
+      "sha256": "8bfd0d14db019d87148583baf9375f12967349e49ae985e92e11b392091608eb"
+    },
+    {
+      "name": "type-designer",
+      "url": "https://transnetbw-openscd.github.io/oscd-transnetbw-plugins/type-designer/3.17.2/index.js",
+      "dest": "oscd-plugins/type-designer/3.17.2/index.js",
+      "sha256": "7b5ccc0a4abf6fc980a6c188f12fdfabf002a5890e2fb4c7ad38e3e07599dfca"
     }
   ]
 }

@@ -124,6 +124,22 @@ export const officialPlugins = [
     requireDoc: true,
   },
   {
+    name: 'Type Designer',
+    src: '/external-plugins/oscd-plugins/type-designer/3.17.2/index.js',
+    icon: 'design_services',
+    activeByDefault: true,
+    kind: 'editor',
+    requireDoc: true,
+  },
+  {
+    name: 'Type Distributor',
+    src: '/external-plugins/oscd-plugins/type-distributor/1.1.2/index.js',
+    icon: 'share',
+    activeByDefault: true,
+    kind: 'editor',
+    requireDoc: true,
+  },
+  {
     name: 'OSCD Template Generator',
     src: '/external-plugins/oscd-template-generator/oscd-template-generator.js',
     icon: 'copy_all',
