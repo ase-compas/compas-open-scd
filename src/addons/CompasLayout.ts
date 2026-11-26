@@ -8,11 +8,10 @@ import {
 import { get } from 'lit-translate';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { OscdApi } from '@compas-oscd/core';
+import { OscdLayout } from '@compas-oscd/open-scd/dist/addons/Layout.js';
 
 import type { UserInfoEvent } from '../compas/foundation.js';
 import type { CompasApi } from '../open-scd.js';
-
-import { OscdLayout } from '@compas-oscd/open-scd/dist/addons/Layout.js';
 
 interface RenderAblePlugin {
   src?: string;
@@ -49,48 +48,55 @@ function staticTagHtml(
 @customElement('compas-layout')
 export class CompasLayout extends OscdLayout {
   @property({ type: String }) username: string | undefined;
+
   @property({ attribute: false }) compasApi?: CompasApi;
 
-  static styles: any = [
-    OscdLayout.styles,
-    css`
-      #compas-logo {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-      }
-      #app-title {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        font-family: Roboto, sans-serif;
-        font-size: 1.1rem;
-        font-weight: 500;
-        color: var(--oscd-internal-nav-primary-text);
-        white-space: nowrap;
-        pointer-events: none;
-      }
-      :host(.hide-editor-tabs) oscd-menu-tabs {
-        display: none !important;
-      }
-    `,
-  ];
+  @property({ type: Boolean, reflect: true, attribute: 'hide-editor-tabs' })
+  hideEditorTabs = false;
+
+  static styles = css`
+    ${OscdLayout.styles}
+
+    #compas-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+    }
+    #app-title {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-family: Roboto, sans-serif;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--oscd-internal-nav-primary-text);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    :host([hide-editor-tabs]) oscd-menu-tabs {
+      display: none !important;
+    }
+  `;
+
+  private readonly onToggleEditorTabs = (event: Event): void => {
+    const { detail } = event as CustomEvent<{ visible?: boolean }>;
+    this.hideEditorTabs = !(detail?.visible ?? true);
+  };
 
   connectedCallback(): void {
     super.connectedCallback();
 
     this.onUserInfo = this.onUserInfo.bind(this);
     this.host.addEventListener('userinfo', this.onUserInfo);
+    this.addEventListener('toggle-editor-tabs', this.onToggleEditorTabs);
+  }
 
-    /** Engineering Wizard hides/shows oscd-menu-tabs (IED, Substation, …) for its fullscreen views. */
-    this.addEventListener('toggle-editor-tabs', (e: Event) => {
-      const { detail } = e as CustomEvent<{ visible?: boolean }>;
-      const visible = detail?.visible ?? true;
-      this.classList.toggle('hide-editor-tabs', !visible);
-    });
+  disconnectedCallback(): void {
+    this.removeEventListener('toggle-editor-tabs', this.onToggleEditorTabs);
+    super.disconnectedCallback();
   }
 
   private onUserInfo(event: UserInfoEvent) {
